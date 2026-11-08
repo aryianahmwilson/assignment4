@@ -1,0 +1,2 @@
+AI tool used (ChatGPT/Claude/Gemini + model)
+Debugging prompts/questions (responses are not required)
