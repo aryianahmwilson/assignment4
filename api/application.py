@@ -7,6 +7,11 @@ from flask import session
 import secrets
 import os
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy import Column, Integer, ForeignKey, String
+
 app = Flask(__name__)
 CORS(app, supports_credentials=True)
 
@@ -16,14 +21,39 @@ UPLOAD_FOLDER = 'static/images/photos'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 
+# SQLite Database creation
+Base = declarative_base()
+
+db_name = os.getenv("PHOTO_PORTAL_DB","photosdata.db")
+db_url = "sqlite:///" + db_name
+engine = create_engine(db_url, future=True, connect_args={'check_same_thread': False})
+
+DBSession = sessionmaker(bind=engine)
+
 # Requirement 1.1
 # Add SQLAlchemy object to represent Admin User (refer assignment3)
+class AdminUser(Base):
+    __tablename__ = 'admin'
+
+    id = Column(Integer, primary_key=True)
+    username = Column(String)
+    password = Column(String)
+
+    def __repr__(self):
+        return "<AdminUser(username='%s', password='%s')>" % (
+            self.username, self.password)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 # Requirement 2.1
 # Add SQLAlchemy object to represent General User (refer assignment3)
 
 # Requirement 3.1
 # Add SQLAlchemy object to store photos; Add a column to store photo comments 
+
+Base.metadata.create_all(engine)
 
 
 # Requirement 3.4
@@ -67,8 +97,44 @@ def upload_photo():
 # -- Admin user -- 
 
 # Requirement 1.2 - Add a POST call to register an admin user
+@app.route("/api/admin", methods=["POST"])
+def admin():
+    dbsession = DBSession()
+
+    #get new admin's username and password from JSON object
+    data = request.get_json()
+    username = data.get("username")
+    password = data.get("password")
+
+    #create a new admin object
+    admin_user = AdminUser(username=username, password=password)
+
+    dbsession.add(admin_user)
+    dbsession.commit()
+    dbsession.close()
+
+    return jsonify({"message": "Success", "username": username})
+
 
 # Requirement 1.3 - Add a GET call to get all registered admin users
+@app.route("/api/admin", methods=["GET"])
+def get_admins():
+
+    dbsession = DBSession()
+
+    #get all registered admin objects
+    admins = dbsession.query(AdminUser)
+
+    admin_dict_list = []
+
+    for admin in admins:
+
+        #add admin dictionaries to admin_dict_list
+        admin_dict_list.append(admin.as_dict())
+
+    dbsession.close()
+
+    return jsonify({"admins": admin_dict_list})
 
 # Requirement 1.4 - Complete the adminlogin implementation
 @app.route("/api/adminlogin", methods=["POST"])
@@ -79,7 +145,14 @@ def admin_login():
     password = data.get("password")
     # Query database to check if username/password exists or  not
     # Replace the below if check with database query
-    if username == "admin" and password == "admin":
+
+    dbsession = DBSession()
+
+    database_login = dbsession.query(AdminUser).filter_by(password=password, username=username).first()
+
+    dbsession.close()
+
+    if database_login != None:
         flask.session["username"] = username
         return jsonify({"message": "Success", "username": username})
     else:
