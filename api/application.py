@@ -122,6 +122,32 @@ def get_photos():
 
 
 # Requirement 5 -- Add search functionality - Refer to your assignment2 implementation
+@app.route("/api/search", methods=["POST"])
+def search():
+
+    data = request.get_json()
+    searchInput = data.get("query").strip()
+    searchSelect = data.get("type")
+
+    matchingPhotos_dict = []
+
+    dbsession = DBSession()
+
+    photos = dbsession.query(Photos)
+
+    for photo in photos:
+        if searchSelect == "Name" and searchInput in photo.name:
+             matchingPhotos_dict.append(photo.as_dict())
+        elif searchSelect == "Date" and searchInput == photo.date_taken:
+             matchingPhotos_dict.append(photo.as_dict())
+        elif searchSelect == "Tags" and searchInput in photo.tags:
+             matchingPhotos_dict.append(photo.as_dict())
+
+    dbsession.close()
+
+   
+    return jsonify({"results": matchingPhotos_dict})
+
 
 @app.route('/api/upload', methods=['POST'])
 def upload_photo():

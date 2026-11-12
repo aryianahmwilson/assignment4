@@ -1,3 +1,36 @@
-AI tool used: Claude
+AI tool used: Claude (Claude Opus 5.5)
+
 Debugging prompts/questions:
 
+Requirement 1 (Admin user API)
+- For Requirement 1.1, is the PhotoData class from assignment3 the code I'm supposed to reference, or the dbsession code?
+- Can you check my AdminUser SQLAlchemy class? Also, my sqlalchemy imports show "could not be resolved."
+- The starter code didn't have Base.metadata.create_all(engine) or the engine/DBSession setup from assignment3. Should I add them?
+- Is Requirement 1.2 where I create an admin object and assign its columns?
+- Can you check my POST /api/admin route?
+- Can you check my GET /api/admin route?
+- Can you check my /api/adminlogin database query?
+
+Requirement 2 (General user API)
+- Can you check my GeneralUser SQLAlchemy class?
+- Can you check my POST and GET /api/generaluser routes?
+- Can you check my /api/generaluserlogin database query?
+
+Requirement 3 (Photos, upload, comments)
+- Can you check my Photos SQLAlchemy class with the comments column?
+- Can you check my changes to upload_photo() for storing photo data and comments in the database?
+- For Requirement 3.3, am I supposed to replace the os.listdir placeholder line and get the photos from the database instead?
+- Can you check my GET /api/photos route?
+- Can you check my GET /api/photos/<photo_name>/comments route?
+- Can you check my comments textarea in PhotoPortal.js?
+- Can you check my fetchPhotoComments fetch call?
+- Which comments is the Requirement 3.6 instruction asking me to get rid of?
+
+Requirement 4 (GeneralUser component)
+- Can you check my Route for "/" in App.js?
+- What does "HTML with Google form" mean in Requirement 4.2?
+- Can you check my gmail input box and handleSubmit in GeneralUser.js?
+- Can you check my "user not found" implementation for Requirement 4.3?
+
+Requirement 5 (Search)
+- Can you check my /api/search route against the search form and handleSearch in the frontend?
