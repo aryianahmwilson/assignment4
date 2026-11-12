@@ -25,6 +25,9 @@ function App() {
 	      </>
       } 
       />
+      
+      <Route path="/" element={<GeneralUser />}/>
+
     </Routes>
   );
 }
