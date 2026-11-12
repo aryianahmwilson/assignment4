@@ -64,6 +64,22 @@ class GeneralUser(Base):
 
 # Requirement 3.1
 # Add SQLAlchemy object to store photos; Add a column to store photo comments 
+class Photos(Base):
+    __tablename__ = 'photos'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    date_taken = Column(String)
+    tags = Column(String)
+    comments = Column(String)
+
+    def __repr__(self):
+        return "<Photos(name='%s', date_taken='%s', tags='%s', comments='%s')>" % (
+            self.name, self.date_taken, self.tags, self.comments)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
+
 
 Base.metadata.create_all(engine)
 
@@ -71,16 +87,38 @@ Base.metadata.create_all(engine)
 # Requirement 3.4
 @app.route("/api/photos/<photo_name>/comments", methods=["GET"])
 def get_photo_comments(photo_name):
-    print("Comments for:" + photo_name)
-    comments = "This is comment 1"
-    return jsonify({"comments": comments})
+
+   dbsession = DBSession()
+
+   photo = dbsession.query(Photos).filter_by(name=photo_name).first()
+
+   comments = ""
+
+   if photo != None:
+       comments = photo.comments
+
+   dbsession.close()
+  
+   return jsonify({"comments": comments})
 
 
 # Requirement 3.3: Query the database to return photo metadata (date_taken and tags) for all photos
 @app.route("/api/photos", methods=["GET"])
 def get_photos():
-    photos = [{"name": p, "date_taken": "...", "tags": "..."} for p in os.listdir("static/images/photos")]
-    return jsonify({"photos": photos})
+
+    dbsession = DBSession()
+
+    #get list of photo objects
+    photos = dbsession.query(Photos)
+
+    photo_dicts = []
+
+    for photo in photos:
+        photo_dicts.append(photo.as_dict())
+
+    dbsession.close()
+
+    return jsonify({"photos": photo_dicts})
 
 
 # Requirement 5 -- Add search functionality - Refer to your assignment2 implementation
@@ -90,6 +128,7 @@ def upload_photo():
     file = request.files.get('photo_file')
     date_taken = request.form.get('date_taken')
     tags = request.form.get('tags')
+    comments = request.form.get('comments')
 
     # Requirement 3.2
 
@@ -98,6 +137,15 @@ def upload_photo():
 
     save_path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(save_path)
+
+    dbsession = DBSession()
+
+    #store photo in database
+    photo = Photos(name=file.filename, date_taken=date_taken, tags=tags, comments=comments)
+
+    dbsession.add(photo)
+    dbsession.commit()
+    dbsession.close()
 
     # You’d normally save metadata to DB here
     return jsonify({

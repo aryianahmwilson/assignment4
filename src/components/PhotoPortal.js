@@ -63,6 +63,21 @@ const PhotoPortal = () => {
 	  // Requirement 3.6
 	  // Make a fetch call to the backend to retrieve photocomments
 	  // Then setPhotoComments
+
+    try {
+
+      const response = await fetch(`http://localhost:5000/api/photos/${photoName}/comments`);
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch comments");
+      }
+
+      const data = await response.json();
+      setPhotoComments(data.comments)
+    }
+    catch (error) {
+      console.error("Error fetching photo comments:", error);
+    }
   };
 
   // ----------------------------------------------------------------------
@@ -152,6 +167,8 @@ const PhotoPortal = () => {
                   style={{ maxWidth: "100%" }}
                 />
 	        {/* Requirement 3.6 Display photoComments in the provided - Get rid of comments afterwards  <div>    </div>  */}
+                
+                <div>{photoComments}</div>
 		</div>
               )}
             </div>
@@ -269,6 +286,12 @@ const PhotoPortal = () => {
                       </td>
                     </tr>
 		    {/* Requirement 3.5 - Add input of type textarea for comments  */}
+                        <td><label>Comment</label></td>
+                        <textarea
+                          name="comments"
+                          placeholder="comments"
+                          id="comments"
+                        />
                   </tbody>
                 </table>
                 <button className="btn btn-primary">Submit</button>
