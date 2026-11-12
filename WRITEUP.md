@@ -12,7 +12,7 @@ admins
 {@{id=1; password=admin123; username=admin}}
 
 
-screenshot of requirement 1.4 correctly returning Success given an admin username/password combination that exists in the data base
-![alt text](image.png)
+screenshot of requirement 1.4 correctly returning Success given an admin username/password combination that exists in the data base and returning not found if an incorrect password/username combination is given for an admin
+![alt text](image-1.png)
 
 

@@ -49,6 +49,18 @@ class AdminUser(Base):
 
 # Requirement 2.1
 # Add SQLAlchemy object to represent General User (refer assignment3)
+class GeneralUser(Base):
+    __tablename__ = 'general'
+
+    id = Column(Integer, primary_key=True)
+    gmail = Column(String)
+
+    def __repr__(self):
+        return "<GeneralUser(gmail='%s')>" % (
+            self.gmail)
+
+    def as_dict(self):
+        return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
 # Requirement 3.1
 # Add SQLAlchemy object to store photos; Add a column to store photo comments 
@@ -161,8 +173,44 @@ def admin_login():
 # -- General user --
 
 # Requirement 2.2 - Add a POST call to register a general user
+@app.route("/api/generaluser", methods=["POST"])
+def general():
+
+    dbsession = DBSession()
+
+    #get new general user gmail from JSON object
+    data = request.get_json()
+    gmail = data.get("gmail")
+
+    #create new general user object 
+    general_user = GeneralUser(gmail=gmail)
+
+    dbsession.add(general_user)
+    dbsession.commit()
+    dbsession.close()
+
+    return jsonify({"message": "Success", "gmail": gmail})
+
+
 
 # Requirement 2.3 - Add a GET call to get all registered general users
+@app.route("/api/generaluser", methods=["GET"])
+def get_general():
+
+    dbsession = DBSession()
+
+    generalUsers = dbsession.query(GeneralUser)
+
+    generalUsers_dict = []
+
+    for user in generalUsers:
+        generalUsers_dict.append(user.as_dict())
+
+    dbsession.close()
+
+    return jsonify({"General Users": generalUsers_dict})
+
+
 
 # Requirement 2.4 - Complete the generaluserlogin implementation
 @app.route("/api/generaluserlogin", methods=["POST"])
@@ -170,11 +218,21 @@ def generaluser_login():
     data = request.get_json()
     print("Received:", data)
     username = data.get("gmail")
-    flask.session["username"] = username
     # Query database to check if username/password exists or  not
     # Replace the below if check with database query
     # If the generaluser is not present, return NotFound
-    return jsonify({"message": "Success", "username": username})
+
+    dbsession = DBSession()
+
+    database_login = dbsession.query(GeneralUser).filter_by(gmail=username).first()
+
+    dbsession.close()
+
+    if database_login != None:
+        flask.session["username"] = username
+        return jsonify({"message": "Success", "username": username})
+    else:
+        return jsonify({"message": "NotFound"})
 
 # Requirement 2.3
 
